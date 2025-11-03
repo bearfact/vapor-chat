@@ -1,0 +1,66 @@
+We need to build a next.js application for an organization called VaporWatch.
+Before beginning I will provide you with all of the necessary background information. Respond with a confirmation that you have received this information.
+I will supply you with the next instruction immediately after your confirmation.
+## Background:
+- The web application provides private chat rooms.
+- Any user can create a new a room.
+- Users can join a room by room name and password.
+- Any user can submit a message to the chat.
+- The chat history can be cleared by any user at any time.
+- The chat history is also cleared when any user leaves the room.
+- You will play the role of expert full-stack developer. You will take guidance from me in building the application step by step.  I will offer target goals and you will create and enact a plan to achieve this goal.
+## Coding Preferences
+- We will be using Next.js, React, Tailwind, and Vercel for this application.
+- We will store chat messages in Superbase.
+## Functionality
+- The application will be composed of 2 mobile responsive pages.
+- The pages will have a shared nav bar and footer.
+- The first page will be for choosing to create a new room or join an existing room.
+- To create a room the user will need to provide a Room Name, Room Password, and User Display Name.
+- To join a room the user will need to provide a Room Name, Room Password, and User Display Name.
+- The second page will provide an interface for posting chat messages, view the history of chat messages, leaving the room, and clearing chat history.
+- Use the attached image as a reference.
+
+## VaporChat Visual Identity
+1. Typography: Controlled Explosion
+Concept: Sharp contrast between rational order and emotional rupture.
+Primary Typeface:
+ Modern grotesque sans-serif — e.g., Neue Haas Grotesk, Söhne, or Inter Tight.
+ Clean, neutral, cerebral — the before of the mind-blow.
+Accent Typeface:
+ Expressive experimental serif or display font — e.g., Whyte Inktrap, Canela, or Grifinito L.
+ Use it sparingly, like a visual “boom” in a headline or focal word.
+Play with Scale & Contrast:
+ → Giant, oversized words next to small ones.
+ → Sudden weight changes (Extra Bold → Thin).
+ → Tight vs. loose kerning.
+ These typographic ruptures mirror the :exploding_head: moment.
+2. Color Palette: Voltage & Revelation
+Core Mood: High-contrast, high-emotion. A mix of neon intensity and void-like calm.
+Palette ZoneColorUsageBase / BackgroundOff-black #0D0D0D or deep indigo #0E0A1ACalm before the explosionPrimary AccentElectric magenta #FF1FF0 or acid lime #C4FF1AThe “shock” momentSecondary AccentCyan #00FFFF or searing orange #FF4D00Adds vibrancy and energyHighlight / RevelationPure white #FFFFFF or pale silver #F2F2F2Clarity after impactDesaturated NeutralsCharcoal #222222, Warm gray #AAAAAAAnchor for balance
+Tip: Use dark fields with sudden bursts of color — light emanating from darkness, symbolizing insight emerging from confusion.
+3. Composition & Layout: The Moment of Impact
+Tension & Release:
+ Use asymmetric layouts — one side dense, the other minimal. This creates a sense of cognitive friction.
+Visual Hierarchy as Narrative:
+ Lead the viewer from confusion → focus → revelation. The eye should experience a “mind-blown” journey.
+Motion (if digital):
+Micro-animations that burst or ripple when hovered.
+Sudden bright flashes or rotations that settle into clarity.
+Smooth transitions from chaos to structure.
+4. Imagery & Texture: Fracture + Flow
+Imagery: Abstract explosions, light bursts, neural-like patterns, or data glitch art.
+Texture: Mix organic (ink, smoke, energy waves) with digital (glitch, noise, gradient meshes).
+Contrast: Pair smooth vector forms with grainy or fractal overlays.
+5. Iconography & Graphics
+Style: Geometric, line-based, minimalist — but occasionally ruptured (broken lines, distorted edges).
+Symbolism: Think neurons, lightning, expanding circles — metaphors for thought and revelation.
+6. Sound / Motion Identity (if multimedia)
+Sound design = rising frequencies, static bursts, silence → boom → calm clarity.
+Motion = slow zooms, expanding light, dissolving fragments coalescing into meaning.
+7. Brand Tagline Visual Treatment
+“Make Them Say Whoa.”
+Type in uppercase grotesque sans.
+Explode one letter (e.g., the O as a radial burst).
+Animate the “O” pulsing outward — like a visual thought detonating.
+Confirm your understanding of my instructions and initial context before we proceed.
