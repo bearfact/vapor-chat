@@ -74,6 +74,8 @@ export default function ChatRoom() {
 
   // Vaporize effect state
   const [isVaporizing, setIsVaporizing] = useState(false);
+  const [isShaking, setIsShaking] = useState(false);
+  const [isGlitching, setIsGlitching] = useState(false);
 
   // Scroll to bottom when messages change
   const scrollToBottom = () => {
@@ -170,6 +172,11 @@ export default function ChatRoom() {
         if (!mountedRef.current) return;
         console.log('Broadcast: clear_history received');
         setMessages([]);
+      })
+      .on('broadcast', { event: 'vaporize_effect' }, () => {
+        if (!mountedRef.current) return;
+        console.log('Broadcast: vaporize_effect received');
+        setIsVaporizing(true);
       })
       .subscribe((status) => {
         if (!mountedRef.current) return;
@@ -269,11 +276,37 @@ export default function ChatRoom() {
 
   const handleClearHistory = async () => {
     try {
-      // Trigger vaporize effect first
+      // Start glitch effect first
+      setIsGlitching(true);
+      await new Promise(resolve => setTimeout(resolve, 200));
+
+      // Start screen shake
+      setIsShaking(true);
+      await new Promise(resolve => setTimeout(resolve, 100));
+
+      // Broadcast vaporize effect to all users in the room
+      try {
+        await supabase
+          .channel(`room:${roomId}`)
+          .send({
+            type: 'broadcast',
+            event: 'vaporize_effect',
+            payload: {},
+          });
+        console.log('Vaporize effect broadcast sent');
+      } catch (broadcastErr) {
+        console.warn('Failed to broadcast vaporize effect:', broadcastErr);
+        // Continue anyway
+      }
+
+      // Trigger vaporize effect locally
       setIsVaporizing(true);
 
-      // Wait a moment for the effect to start
+      // Wait a moment for the effect to start for all users
       await new Promise(resolve => setTimeout(resolve, 300));
+
+      // Stop shake after effect starts
+      setIsShaking(false);
 
       // Delete all messages from database
       const { error } = await supabase
@@ -304,6 +337,8 @@ export default function ChatRoom() {
     } catch (err) {
       console.error('Error clearing history:', err);
       setIsVaporizing(false);
+      setIsShaking(false);
+      setIsGlitching(false);
       setDialogState({
         isOpen: true,
         type: 'alert',
@@ -325,11 +360,37 @@ export default function ChatRoom() {
 
   const handleLeaveRoom = async () => {
     try {
-      // Trigger vaporize effect first
+      // Start glitch effect first
+      setIsGlitching(true);
+      await new Promise(resolve => setTimeout(resolve, 200));
+
+      // Start screen shake
+      setIsShaking(true);
+      await new Promise(resolve => setTimeout(resolve, 100));
+
+      // Broadcast vaporize effect to all users in the room
+      try {
+        await supabase
+          .channel(`room:${roomId}`)
+          .send({
+            type: 'broadcast',
+            event: 'vaporize_effect',
+            payload: {},
+          });
+        console.log('Vaporize effect broadcast sent');
+      } catch (broadcastErr) {
+        console.warn('Failed to broadcast vaporize effect:', broadcastErr);
+        // Continue anyway
+      }
+
+      // Trigger vaporize effect locally
       setIsVaporizing(true);
 
-      // Wait a moment for the effect to start
+      // Wait a moment for the effect to start for all users
       await new Promise(resolve => setTimeout(resolve, 300));
+
+      // Stop shake after effect starts
+      setIsShaking(false);
 
       // Delete all messages from database
       const { error } = await supabase
@@ -364,6 +425,8 @@ export default function ChatRoom() {
     } catch (err) {
       console.error('Error leaving room:', err);
       setIsVaporizing(false);
+      setIsShaking(false);
+      setIsGlitching(false);
       router.push('/');
     }
   };
@@ -383,8 +446,40 @@ export default function ChatRoom() {
 
   return (
     <>
+      <style jsx>{`
+        @keyframes shake {
+          0%, 100% { transform: translate(0, 0) rotate(0deg); }
+          10% { transform: translate(-5px, -5px) rotate(-1deg); }
+          20% { transform: translate(5px, 5px) rotate(1deg); }
+          30% { transform: translate(-5px, 5px) rotate(-1deg); }
+          40% { transform: translate(5px, -5px) rotate(1deg); }
+          50% { transform: translate(-3px, 3px) rotate(-0.5deg); }
+          60% { transform: translate(3px, -3px) rotate(0.5deg); }
+          70% { transform: translate(-3px, -3px) rotate(-0.5deg); }
+          80% { transform: translate(3px, 3px) rotate(0.5deg); }
+          90% { transform: translate(-2px, 2px) rotate(-0.25deg); }
+        }
+
+        @keyframes glitch {
+          0% { transform: translate(0); }
+          20% { transform: translate(-2px, 2px); }
+          40% { transform: translate(-2px, -2px); }
+          60% { transform: translate(2px, 2px); }
+          80% { transform: translate(2px, -2px); }
+          100% { transform: translate(0); }
+        }
+
+        .shake {
+          animation: shake 0.4s cubic-bezier(.36,.07,.19,.97) both infinite;
+        }
+
+        .glitch {
+          animation: glitch 0.1s infinite;
+          filter: contrast(1.2) saturate(1.5);
+        }
+      `}</style>
       <Navbar showTabs={false} />
-      <main className="flex-1 flex flex-col">
+      <main className={`flex-1 flex flex-col ${isShaking ? 'shake' : ''}`}>
         <div className="max-w-5xl mx-auto px-4 py-6 flex-1 flex flex-col w-full">
           {/* Header with Room Name */}
           <div className="bg-charcoal border-2 border-gray/30 rounded-lg p-4 mb-4">
@@ -418,7 +513,7 @@ export default function ChatRoom() {
           </div>
 
           {/* Messages Container */}
-          <div className={`flex-1 bg-charcoal border-2 border-gray/30 rounded-lg overflow-hidden flex flex-col min-h-0 transition-opacity duration-500 ${isVaporizing ? 'opacity-0' : 'opacity-100'}`}>
+          <div className={`flex-1 bg-charcoal border-2 border-gray/30 rounded-lg overflow-hidden flex flex-col min-h-0 transition-opacity duration-500 ${isVaporizing ? 'opacity-0' : 'opacity-100'} ${isGlitching ? 'glitch' : ''}`}>
             <div className="flex-1 overflow-y-auto p-6 space-y-4">
               {messages.length === 0 ? (
                 <div className="h-full flex items-center justify-center">
@@ -501,7 +596,10 @@ export default function ChatRoom() {
       />
       <VaporizeEffect
         isActive={isVaporizing}
-        onComplete={() => setIsVaporizing(false)}
+        onComplete={() => {
+          setIsVaporizing(false);
+          setIsGlitching(false);
+        }}
       />
     </>
   );
