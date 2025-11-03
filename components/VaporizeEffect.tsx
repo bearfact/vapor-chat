@@ -24,7 +24,7 @@ interface VaporizeEffectProps {
 
 export default function VaporizeEffect({ isActive, onComplete }: VaporizeEffectProps) {
   const canvasRef = useRef<HTMLCanvasElement>(null);
-  const animationFrameRef = useRef<number>();
+  const animationFrameRef = useRef<number | undefined>(undefined);
   const particlesRef = useRef<Particle[]>([]);
   const frameCountRef = useRef<number>(0);
 
