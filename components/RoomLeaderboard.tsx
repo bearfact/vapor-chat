@@ -4,7 +4,11 @@ import { useState, useEffect, useRef } from 'react';
 import { useRouter } from 'next/navigation';
 import { supabase, type RoomStats } from '@/lib/supabase';
 
-export default function RoomLeaderboard() {
+interface RoomLeaderboardProps {
+  onRoomSelect?: (roomName: string) => void;
+}
+
+export default function RoomLeaderboard({ onRoomSelect }: RoomLeaderboardProps) {
   const router = useRouter();
   const [roomStats, setRoomStats] = useState<RoomStats[]>([]);
   const [loading, setLoading] = useState(true);
@@ -119,10 +123,11 @@ export default function RoomLeaderboard() {
     }
   };
 
-  const handleRoomClick = (roomId: string) => {
-    // Note: Users still need to know the password to join
-    // This just shows the stats, actual joining requires password
-    console.log(`Room ${roomId} clicked`);
+  const handleRoomClick = (roomName: string) => {
+    // Call the parent callback to switch to join mode and fill room name
+    if (onRoomSelect) {
+      onRoomSelect(roomName);
+    }
   };
 
   if (loading) {
@@ -180,7 +185,7 @@ export default function RoomLeaderboard() {
             <div
               key={room.id}
               className={`grid grid-cols-[auto_2fr_1fr_1fr_1fr] gap-4 px-4 py-3 rounded-lg hover:bg-gray/10 transition-all cursor-pointer border-2 border-transparent hover:border-accent-magenta/30 ${rankBg}`}
-              onClick={() => handleRoomClick(room.id)}
+              onClick={() => handleRoomClick(room.name)}
             >
               <div className={`text-center font-bold ${rankColor} ${rankSize} flex items-center justify-center`}>
                 {index + 1}
@@ -209,7 +214,7 @@ export default function RoomLeaderboard() {
       </div>
 
       <div className="mt-4 text-xs text-gray text-center">
-        Click on a room name above, then use "Join a Room" to enter
+        Click on a room to auto-fill the name in the join form
       </div>
     </div>
   );

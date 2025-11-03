@@ -15,6 +15,14 @@ export default function Home() {
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
 
+  const handleRoomSelect = (roomName: string) => {
+    // Switch to join mode and fill in the room name
+    setMode('join');
+    setRoomName(roomName);
+    // Clear error when selecting a new room
+    setError('');
+  };
+
   const handleCreateRoom = async (e: React.FormEvent) => {
     e.preventDefault();
     setError('');
@@ -96,7 +104,7 @@ export default function Home() {
           <div className="max-w-6xl mx-auto grid grid-cols-1 lg:grid-cols-2 gap-8 items-start">
             {/* Leaderboard Section */}
             <div className="order-2 lg:order-1">
-              <RoomLeaderboard />
+              <RoomLeaderboard onRoomSelect={handleRoomSelect} />
             </div>
 
             {/* Create/Join Form Section */}
