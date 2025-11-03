@@ -4,6 +4,7 @@ import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { supabase } from '@/lib/supabase';
 import Navbar from '@/components/Navbar';
+import RoomLeaderboard from '@/components/RoomLeaderboard';
 
 export default function Home() {
   const router = useRouter();
@@ -91,8 +92,16 @@ export default function Home() {
     <>
       <Navbar mode={mode} onModeChange={setMode} showTabs={true} />
       <main className="flex-1">
-        <div className="min-h-[calc(100vh-8rem)] flex items-center justify-center px-4 py-12">
-          <div className="max-w-md w-full">
+        <div className="min-h-[calc(100vh-8rem)] px-4 py-12">
+          <div className="max-w-6xl mx-auto grid grid-cols-1 lg:grid-cols-2 gap-8 items-start">
+            {/* Leaderboard Section */}
+            <div className="order-2 lg:order-1">
+              <RoomLeaderboard />
+            </div>
+
+            {/* Create/Join Form Section */}
+            <div className="order-1 lg:order-2 lg:sticky lg:top-8">
+              <div className="max-w-md w-full mx-auto">
             <div className="bg-charcoal border-2 border-gray/30 rounded-lg p-8">
               <h2 className="text-2xl font-bold mb-6 text-center">
                 {mode === 'create' ? (
@@ -166,6 +175,8 @@ export default function Home() {
                   {loading ? 'Please wait...' : mode === 'create' ? 'Create' : 'Join'}
                 </button>
               </form>
+            </div>
+              </div>
             </div>
           </div>
         </div>

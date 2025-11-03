@@ -3,7 +3,8 @@ CREATE TABLE IF NOT EXISTS rooms (
   id UUID DEFAULT gen_random_uuid() PRIMARY KEY,
   name TEXT UNIQUE NOT NULL,
   password TEXT NOT NULL,
-  created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
+  created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
+  vaporize_count INTEGER DEFAULT 0
 );
 
 -- Create messages table
@@ -31,3 +32,8 @@ CREATE POLICY "Enable delete access for all users" ON rooms FOR DELETE USING (tr
 CREATE POLICY "Enable read access for all users" ON messages FOR SELECT USING (true);
 CREATE POLICY "Enable insert access for all users" ON messages FOR INSERT WITH CHECK (true);
 CREATE POLICY "Enable delete access for all users" ON messages FOR DELETE USING (true);
+CREATE POLICY "Enable update access for all users" ON rooms FOR UPDATE USING (true);
+
+-- Migration: Add vaporize_count to existing rooms table
+-- Run this if you already have a database set up without the vaporize_count column
+ALTER TABLE rooms ADD COLUMN IF NOT EXISTS vaporize_count INTEGER DEFAULT 0;

@@ -316,6 +316,19 @@ export default function ChatRoom() {
 
       if (error) throw error;
 
+      // Increment vaporize counter for the room
+      const { data: currentRoom } = await supabase
+        .from('rooms')
+        .select('vaporize_count')
+        .eq('id', roomId)
+        .single();
+
+      const currentCount = currentRoom?.vaporize_count || 0;
+      await supabase
+        .from('rooms')
+        .update({ vaporize_count: currentCount + 1 })
+        .eq('id', roomId);
+
       // Broadcast clear event to all users in the room (using the existing channel)
       try {
         await supabase
@@ -399,6 +412,19 @@ export default function ChatRoom() {
         .eq('room_id', roomId);
 
       if (error) throw error;
+
+      // Increment vaporize counter for the room
+      const { data: currentRoom } = await supabase
+        .from('rooms')
+        .select('vaporize_count')
+        .eq('id', roomId)
+        .single();
+
+      const currentCount = currentRoom?.vaporize_count || 0;
+      await supabase
+        .from('rooms')
+        .update({ vaporize_count: currentCount + 1 })
+        .eq('id', roomId);
 
       // Broadcast clear event to all remaining users in the room
       try {

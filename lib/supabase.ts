@@ -18,4 +18,14 @@ export type Room = {
   name: string;
   password: string;
   created_at: string;
+  vaporize_count?: number;
+};
+
+export type RoomStats = {
+  id: string;
+  name: string;
+  active_users: number;
+  messages_per_minute: number;
+  vaporize_count: number;
+  recent_activity: string;
 };
