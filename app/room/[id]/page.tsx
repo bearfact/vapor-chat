@@ -4,6 +4,8 @@ import { useState, useEffect, useRef } from 'react';
 import { useParams, useRouter, useSearchParams } from 'next/navigation';
 import { supabase, type Message } from '@/lib/supabase';
 import Navbar from '@/components/Navbar';
+import Dialog from '@/components/Dialog';
+import VaporizeEffect from '@/components/VaporizeEffect';
 
 export default function ChatRoom() {
   const params = useParams();
@@ -19,6 +21,59 @@ export default function ChatRoom() {
   const [realtimeStatus, setRealtimeStatus] = useState<'connecting' | 'connected' | 'error'>('connecting');
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const mountedRef = useRef(true);
+
+  // User color mapping - maintains consistent colors for each user
+  const userColorsRef = useRef<Map<string, number>>(new Map());
+
+  // Color configurations with full Tailwind class names for JIT compilation
+  const colorConfigs = [
+    {
+      bg: 'bg-accent-cyan/20',
+      border: 'border-accent-cyan/40',
+      text: 'text-accent-cyan',
+    },
+    {
+      bg: 'bg-accent-magenta/20',
+      border: 'border-accent-magenta/40',
+      text: 'text-accent-magenta',
+    },
+    {
+      bg: 'bg-accent-lime/20',
+      border: 'border-accent-lime/40',
+      text: 'text-accent-lime',
+    },
+    {
+      bg: 'bg-accent-orange/20',
+      border: 'border-accent-orange/40',
+      text: 'text-accent-orange',
+    },
+  ];
+
+  // Function to get or assign a color index to a user
+  const getUserColorIndex = (userName: string): number => {
+    if (!userColorsRef.current.has(userName)) {
+      // Assign color based on the number of users we've seen
+      const colorIndex = userColorsRef.current.size % colorConfigs.length;
+      userColorsRef.current.set(userName, colorIndex);
+    }
+    return userColorsRef.current.get(userName)!;
+  };
+
+  // Dialog state
+  const [dialogState, setDialogState] = useState<{
+    isOpen: boolean;
+    type: 'alert' | 'confirm';
+    title?: string;
+    message: string;
+    onConfirm?: () => void;
+  }>({
+    isOpen: false,
+    type: 'alert',
+    message: '',
+  });
+
+  // Vaporize effect state
+  const [isVaporizing, setIsVaporizing] = useState(false);
 
   // Scroll to bottom when messages change
   const scrollToBottom = () => {
@@ -191,18 +246,35 @@ export default function ChatRoom() {
       console.log('Message sent successfully');
     } catch (err) {
       console.error('Error sending message:', err);
-      alert('Failed to send message. Please check your Supabase configuration.');
+      setDialogState({
+        isOpen: true,
+        type: 'alert',
+        title: 'Error',
+        message: 'Failed to send message. Please check your Supabase configuration.',
+      });
       // Restore the message if send failed
       setNewMessage(messageText);
     }
   };
 
-  const handleClearHistory = async () => {
-    if (!confirm('Are you sure you want to clear all chat history? This cannot be undone.')) {
-      return;
-    }
+  const handleClearHistoryConfirm = () => {
+    setDialogState({
+      isOpen: true,
+      type: 'confirm',
+      title: 'Clear History',
+      message: 'Are you sure you want to clear all chat history? This cannot be undone.',
+      onConfirm: handleClearHistory,
+    });
+  };
 
+  const handleClearHistory = async () => {
     try {
+      // Trigger vaporize effect first
+      setIsVaporizing(true);
+
+      // Wait a moment for the effect to start
+      await new Promise(resolve => setTimeout(resolve, 300));
+
       // Delete all messages from database
       const { error } = await supabase
         .from('messages')
@@ -231,16 +303,34 @@ export default function ChatRoom() {
       console.log('History cleared successfully');
     } catch (err) {
       console.error('Error clearing history:', err);
-      alert('Failed to clear history. Please try again.');
+      setIsVaporizing(false);
+      setDialogState({
+        isOpen: true,
+        type: 'alert',
+        title: 'Error',
+        message: 'Failed to clear history. Please try again.',
+      });
     }
   };
 
-  const handleLeaveRoom = async () => {
-    if (!confirm('Leaving the room will clear all chat history for everyone. Are you sure?')) {
-      return;
-    }
+  const handleLeaveRoomConfirm = () => {
+    setDialogState({
+      isOpen: true,
+      type: 'confirm',
+      title: 'Leave Room',
+      message: 'Leaving the room will clear all chat history for everyone. Are you sure?',
+      onConfirm: handleLeaveRoom,
+    });
+  };
 
+  const handleLeaveRoom = async () => {
     try {
+      // Trigger vaporize effect first
+      setIsVaporizing(true);
+
+      // Wait a moment for the effect to start
+      await new Promise(resolve => setTimeout(resolve, 300));
+
       // Delete all messages from database
       const { error } = await supabase
         .from('messages')
@@ -266,10 +356,14 @@ export default function ChatRoom() {
 
       console.log('Left room successfully');
 
+      // Wait for the vaporize effect to complete before navigating
+      await new Promise(resolve => setTimeout(resolve, 1500));
+
       // Navigate back to home
       router.push('/');
     } catch (err) {
       console.error('Error leaving room:', err);
+      setIsVaporizing(false);
       router.push('/');
     }
   };
@@ -324,7 +418,7 @@ export default function ChatRoom() {
           </div>
 
           {/* Messages Container */}
-          <div className="flex-1 bg-charcoal border-2 border-gray/30 rounded-lg overflow-hidden flex flex-col min-h-0">
+          <div className={`flex-1 bg-charcoal border-2 border-gray/30 rounded-lg overflow-hidden flex flex-col min-h-0 transition-opacity duration-500 ${isVaporizing ? 'opacity-0' : 'opacity-100'}`}>
             <div className="flex-1 overflow-y-auto p-6 space-y-4">
               {messages.length === 0 ? (
                 <div className="h-full flex items-center justify-center">
@@ -333,28 +427,28 @@ export default function ChatRoom() {
                   </p>
                 </div>
               ) : (
-                messages.map((msg, index) => (
-                  <div key={msg.id} className="space-y-1">
-                    <div className="flex items-start gap-3">
-                      <div className="flex-1">
-                        <div
-                          className={`rounded-lg px-4 py-3 ${
-                            index % 2 === 0
-                              ? 'bg-accent-cyan/20 border-2 border-accent-cyan/40'
-                              : 'bg-accent-magenta/20 border-2 border-accent-magenta/40'
-                          }`}
-                        >
-                          <p className="text-sm font-bold mb-1">
-                            <span className={index % 2 === 0 ? 'text-accent-cyan' : 'text-accent-magenta'}>
-                              {msg.user_name}:
-                            </span>
-                          </p>
-                          <p className="text-foreground break-words">{msg.message}</p>
+                messages.map((msg) => {
+                  const colorIndex = getUserColorIndex(msg.user_name);
+                  const colors = colorConfigs[colorIndex];
+                  return (
+                    <div key={msg.id} className="space-y-1">
+                      <div className="flex items-start gap-3">
+                        <div className="flex-1">
+                          <div
+                            className={`rounded-lg px-4 py-3 ${colors.bg} border-2 ${colors.border}`}
+                          >
+                            <p className="text-sm font-bold mb-1">
+                              <span className={colors.text}>
+                                {msg.user_name}:
+                              </span>
+                            </p>
+                            <p className="text-foreground break-words">{msg.message}</p>
+                          </div>
                         </div>
                       </div>
                     </div>
-                  </div>
-                ))
+                  );
+                })
               )}
               <div ref={messagesEndRef} />
             </div>
@@ -372,14 +466,14 @@ export default function ChatRoom() {
               />
               <div className="flex gap-3 justify-center">
                 <button
-                  onClick={handleLeaveRoom}
+                  onClick={handleLeaveRoomConfirm}
                   type="button"
                   className="px-6 py-2 bg-background border-2 border-gray/30 hover:border-accent-magenta/50 text-foreground rounded-lg font-semibold transition-all duration-300"
                 >
                   Exit Room
                 </button>
                 <button
-                  onClick={handleClearHistory}
+                  onClick={handleClearHistoryConfirm}
                   type="button"
                   className="px-6 py-2 bg-background border-2 border-gray/30 hover:border-accent-orange/50 text-foreground rounded-lg font-semibold transition-all duration-300"
                 >
@@ -397,6 +491,18 @@ export default function ChatRoom() {
           </form>
         </div>
       </main>
+      <Dialog
+        isOpen={dialogState.isOpen}
+        onClose={() => setDialogState({ ...dialogState, isOpen: false })}
+        onConfirm={dialogState.onConfirm}
+        title={dialogState.title}
+        message={dialogState.message}
+        type={dialogState.type}
+      />
+      <VaporizeEffect
+        isActive={isVaporizing}
+        onComplete={() => setIsVaporizing(false)}
+      />
     </>
   );
 }
